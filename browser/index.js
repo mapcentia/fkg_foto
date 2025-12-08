@@ -1,5 +1,5 @@
 import {createRoot} from 'react-dom/client';
-import React, {useEffect, useMemo, useRef, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import FileUploadWidget from "./FileUploadWidget";
 import {Theme} from "@rjsf/bootstrap-4";
 import {withTheme} from "@rjsf/core";
@@ -36,6 +36,8 @@ const uiSchema = {
     }
 }
 
+let sqlQuery;
+
 
 function Upload(props) {
     const formRef = useRef(null);
@@ -57,13 +59,15 @@ function Upload(props) {
             }
 
             const data = await response.json();
-            await window.FKGUpload.refresh();
+            if (window.vidiConfig.extensionConfig?.fkg_foto?.imageDirectAttach) {
+                await window.FKGUpload.attach(data.image.split('.')[0]);
+                await window.FKGUpload.refresh();
+            }
 
             // Clear the form after successful upload
             if (formRef.current) {
                 formRef.current.setState({formData: {}});
             }
-
             console.log('Success:', data);
         } catch (error) {
             console.error('Error:', error);
@@ -326,13 +330,11 @@ module.exports = module.exports = {
         utils = o.utils;
         backboneEvents = o.backboneEvents;
         session = o.extensions.session.index;
-
-
+        sqlQuery = o.sqlQuery;
     },
 
     init: function () {
         const me = this;
-
         backboneEvents.get().on("feature:selected", (feature) => {
             try {
                 window.FKGUpload.setContext({
@@ -352,6 +354,18 @@ module.exports = module.exports = {
             }
         });
 
+        // Listen to arrival of edit tools
+        $(document).arrive('.feature-info-accordion-body .gc2-edit-tools', {
+            existing: true
+        }, function () {
+            const buttonHtml = `
+                <button id="offcanvasFkgUpploadControlBtn" class="btn btn-outline-secondary w-100" type="button">
+                   <i class="bi bi-camera"></i> Tilknyt fotos
+                </button>`
+            $(this).append(buttonHtml);
+            me.remove();
+            me.create();
+        });
     },
 
     remove: function () {
@@ -359,26 +373,10 @@ module.exports = module.exports = {
         if (offcanvasElement) {
             offcanvasElement.remove();
         }
-
-        const buttonElement = document.getElementById('fkgupload-btn');
-        if (buttonElement) {
-            buttonElement.remove();
-        }
     },
 
     create: function () {
-        // Check if elements already exist, remove them first to avoid duplicates
-        const existingOffcanvas = document.getElementById('offcanvas-fkgupload-start');
-        if (existingOffcanvas) {
-            existingOffcanvas.remove();
-        }
-
-        const existingButton = document.getElementById('fkgupload-btn');
-        if (existingButton) {
-            existingButton.remove();
-        }
-
-        const offcanvasHtml = `    <div class="offcanvas offcanvas-start" data-bs-backdrop="false" tabindex="-1" id="offcanvas-fkgupload-start"
+        const offcanvasHtml = `<div class="offcanvas offcanvas-start" data-bs-backdrop="false" tabindex="-1" id="offcanvas-fkgupload-start"
                                  style="z-index: 999993">
                                 <div class="offcanvas-header">
                                     <h5 class="offcanvas-title">Tilknyt fotos</h5>
@@ -386,14 +384,7 @@ module.exports = module.exports = {
                                 </div>
                                 <div class="offcanvas-body"></div>
                             </div>`
-        const buttonHtml = `<div class="nav-item" id="fkgupload-btn">
-                <button id="offcanvasFkgUpploadControlBtn"
-                        class="btn btn-primary text-nowrap pe-auto" type="button"
-                >
-                    <i class="bi bi-list d-md-none"></i><span class="d-none d-md-inline">Tilknyt fotos</span> <i
-                        class="bi bi-arrow-bar-right"></i><i class="bi bi-arrow-bar-left d-none"></i>
-                </button>
-            </div>`
+
 
         const embedTarget = document.querySelector('.fade-then-dragging.embed');
         if (!embedTarget) {
@@ -408,7 +399,6 @@ module.exports = module.exports = {
         }
 
         embedTarget.insertAdjacentHTML('beforebegin', offcanvasHtml);
-        navTarget.insertAdjacentHTML('beforebegin', buttonHtml);
 
         const offcanvasElement = document.getElementById('offcanvas-fkgupload-start');
         if (!offcanvasElement) {
@@ -418,20 +408,11 @@ module.exports = module.exports = {
 
         const offcanvas = new bootstrap.Offcanvas('#offcanvas-fkgupload-start');
 
-        offcanvasElement.addEventListener('shown.bs.offcanvas', event => {
-            document.querySelector("#offcanvasFkgUpploadControlBtn .bi-arrow-bar-left")?.classList.remove("d-none");
-            document.querySelector("#offcanvasFkgUpploadControlBtn .bi-arrow-bar-right")?.classList.add("d-none");
-        })
-
-        offcanvasElement.addEventListener('hidden.bs.offcanvas', event => {
-            document.querySelector("#offcanvasFkgUpploadControlBtn .bi-arrow-bar-right")?.classList.remove("d-none");
-            document.querySelector("#offcanvasFkgUpploadControlBtn .bi-arrow-bar-left")?.classList.add("d-none");
-        })
-
         const controlBtn = document.getElementById("offcanvasFkgUpploadControlBtn");
         if (controlBtn) {
             controlBtn.addEventListener("click", () => {
                 offcanvas.toggle()
+                sqlQuery.resetAll();
             });
         } else {
             console.error('Control button not found');
