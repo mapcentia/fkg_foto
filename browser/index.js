@@ -414,8 +414,6 @@ module.exports = module.exports = {
                 offcanvas.toggle()
                 sqlQuery.resetAll();
             });
-        } else {
-            console.error('Control button not found');
         }
 
         const offcanvasBody = document.querySelector('#offcanvas-fkgupload-start .offcanvas-body');
