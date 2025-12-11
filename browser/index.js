@@ -359,7 +359,7 @@ module.exports = module.exports = {
             existing: true
         }, function () {
             const buttonHtml = `
-                <button id="offcanvasFkgUpploadControlBtn" class="btn btn-outline-secondary w-100" type="button">
+                <button id="" class="btn btn-outline-secondary w-100 offcanvasFkgUpploadControlBtn" type="button">
                    <i class="bi bi-camera"></i> Tilknyt fotos
                 </button>`
             $(this).append(buttonHtml);
@@ -408,18 +408,22 @@ module.exports = module.exports = {
 
         const offcanvas = new bootstrap.Offcanvas('#offcanvas-fkgupload-start');
 
-        const controlBtn = document.getElementById("offcanvasFkgUpploadControlBtn");
+        const controlBtn = document.querySelectorAll(".offcanvasFkgUpploadControlBtn");
         if (controlBtn) {
-            controlBtn.addEventListener("click", () => {
-                offcanvas.toggle()
-                sqlQuery.resetAll();
+            controlBtn.forEach(btn => {
+                btn.addEventListener("click", () => {
+                    offcanvas.toggle()
+                    sqlQuery.resetAll();
+                });
             });
         }
 
         const offcanvasBody = document.querySelector('#offcanvas-fkgupload-start .offcanvas-body');
         if (offcanvasBody) {
             createRoot(offcanvasBody).render(<div className="d-flex flex-column">
-                <PhotoAttachManager/><div className="position-sticky bg-white" style={{bottom: "-16px"}}><Upload/></div></div>);
+                <PhotoAttachManager/>
+                <div className="position-sticky bg-white" style={{bottom: "-16px"}}><Upload/></div>
+            </div>);
         } else {
             console.error('Offcanvas body not found');
         }
