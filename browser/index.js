@@ -57,7 +57,7 @@ function Upload(props) {
                 const errorData = await response.json().catch(() => ({}));
                 throw new Error(errorData.message || `Upload failed with status: ${response.status}`);
             }
-
+            utils.showInfoToast("Billede uploadet og tilknyttet", {delay: 5000, autohide: true});
             const data = await response.json();
             if (window.vidiConfig.extensionConfig?.fkg_foto?.imageDirectAttach) {
                 await window.FKGUpload.attach(data.image.split('.')[0]);
