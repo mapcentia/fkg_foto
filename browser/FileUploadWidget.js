@@ -1,6 +1,6 @@
 /*
  * @author     Alexander Shumilov
- * @copyright  2013-2023 MapCentia ApS
+ * @copyright  2013-2026 MapCentia ApS
  * @license    http://www.gnu.org/licenses/#AGPL  GNU AFFERO GENERAL PUBLIC LICENSE 3
  */
 
@@ -12,7 +12,7 @@ import {splitBase64} from '../../../browser/modules/utils';
 
 const MAX_WIDTH = 1600;
 const MAX_HEIGHT = 1200;
-const MAX_SIZE = 10000000;
+const MAX_SIZE = 20_000_000;
 
 /**
  * Image field widget
