@@ -259,7 +259,7 @@ function PhotoAttachManager() {
                                 return (
                                     <div className="col gy-2" key={`attached_${e}`}>
                                         <div className="card" style={{width: '100%', position: 'relative'}}>
-                                            <a target="_blank" href={imgSrcOrg}><img
+                                            <a target="_blank" href={imgSrcOrg} title="Se original"><img
                                                 style={{width: '100%', height: '170px', objectFit: 'cover'}}
                                                 src={imgSrc} className="card-img-top" alt="..."/></a>
                                             <div style={{
@@ -305,7 +305,7 @@ function PhotoAttachManager() {
                                 return (
                                     <div className="col gy-2" key={`detached_${e}`}>
                                         <div className="card" style={{width: '100%'}}>
-                                            <a target="_blank" href={imgSrcOrg}><img
+                                            <a target="_blank" href={imgSrcOrg} title="Se original"><img
                                                 style={{width: '100%', height: '170px', objectFit: 'cover'}}
                                                 src={imgSrc} className="card-img-top" alt="..."/></a>
                                             <div className="card-body" style={{alignSelf: 'center'}}>
