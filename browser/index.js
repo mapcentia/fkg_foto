@@ -255,11 +255,13 @@ function PhotoAttachManager() {
                                 const id = `detach_${e}`;
                                 const idp = `primary_${e}`;
                                 const imgSrc = `https://mapcentia-www.s3-eu-west-1.amazonaws.com/fkg/360/${e}.jpg`;
+                                const imgSrcOrg = `https://mapcentia-www.s3-eu-west-1.amazonaws.com/fkg/${e}.jpg`;
                                 return (
                                     <div className="col gy-2" key={`attached_${e}`}>
                                         <div className="card" style={{width: '100%', position: 'relative'}}>
-                                            <img style={{width: '100%', height: '170px', objectFit: 'cover'}}
-                                                 src={imgSrc} className="card-img-top" alt="..."/>
+                                            <a target="_blank" href={imgSrcOrg}><img
+                                                style={{width: '100%', height: '170px', objectFit: 'cover'}}
+                                                src={imgSrc} className="card-img-top" alt="..."/></a>
                                             <div style={{
                                                 position: 'absolute',
                                                 right: '1px',
@@ -299,11 +301,13 @@ function PhotoAttachManager() {
                             {detached.map((e) => {
                                 const id = `attach_${e}`;
                                 const imgSrc = `https://mapcentia-www.s3-eu-west-1.amazonaws.com/fkg/360/${e}.jpg`;
+                                const imgSrcOrg = `https://mapcentia-www.s3-eu-west-1.amazonaws.com/fkg/${e}.jpg`;
                                 return (
                                     <div className="col gy-2" key={`detached_${e}`}>
                                         <div className="card" style={{width: '100%'}}>
-                                            <img style={{width: '100%', height: '170px', objectFit: 'cover'}}
-                                                 src={imgSrc} className="card-img-top" alt="..."/>
+                                            <a target="_blank" href={imgSrcOrg}><img
+                                                style={{width: '100%', height: '170px', objectFit: 'cover'}}
+                                                src={imgSrc} className="card-img-top" alt="..."/></a>
                                             <div className="card-body" style={{alignSelf: 'center'}}>
                                                 <button id={id} className="btn btn-outline-success btn-sm"
                                                         onClick={() => attach(e)}>Tilknyt
