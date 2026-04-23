@@ -1,7 +1,8 @@
 import {createRoot} from 'react-dom/client';
 import React, {useEffect, useRef, useState} from 'react';
 import FileUploadWidget from "./FileUploadWidget";
-import {Theme} from "@rjsf/react-bootstrap";
+// import {Theme} from "@rjsf/react-bootstrap";
+import {Theme} from "@rjsf/bootstrap-4";
 import {withTheme} from "@rjsf/core";
 import validator from "@rjsf/validator-ajv8";
 
@@ -11,7 +12,16 @@ let session;
 
 const widgets = {'fileupload': FileUploadWidget};
 
-const Form = withTheme(Theme);
+// const Form = withTheme(Theme);
+
+const Theme5 = {
+    ...Theme,
+    widgets: {...Theme.widgets}
+}
+
+const Form = withTheme(Theme5);
+
+//
 
 const schema = {
     type: "object",
