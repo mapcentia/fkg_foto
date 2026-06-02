@@ -56,8 +56,9 @@ function Upload(props) {
             const data = await response.json();
             if (window.vidiConfig.extensionConfig?.fkg_foto?.imageDirectAttach) {
                 await window.FKGUpload.attach(data.image.split('.')[0]);
-                await window.FKGUpload.refresh();
             }
+            await window.FKGUpload.refresh();
+
 
             // Clear the form after successful upload
             if (formRef.current) {
