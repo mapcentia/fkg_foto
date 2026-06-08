@@ -237,9 +237,10 @@ router.put('/api/extensions/fkgupload/api/process/:type', async function (req, r
     response.send(data);
 })
 
-router.delete('/api/extensions/fkgupload/api/process/7900/:id', async function (req, response) {
+router.delete('/api/extensions/fkgupload/api/process/:type/:id', async function (req, response) {
     const id = req.params.id;
-    const url = config.gc2.host + `/extensions/fkgupload/api/process/7900/${id}`;
+    const type = req.params.type;
+    const url = config.gc2.host + `/extensions/fkgupload/api/process/${type}/${id}`;
 
     console.log('Request URL:', url);
 
@@ -256,7 +257,9 @@ router.delete('/api/extensions/fkgupload/api/process/7900/:id', async function (
     const responseText = await res.text();
 
     if (!res.ok) {
-        throw new Error(`HTTP error! status: ${res.status}, body: ${responseText}`);
+        data = { success: false, message: responseText };
+        response.status(400).send(data);
+        return;
     }
     // Try to parse as JSON
     try {

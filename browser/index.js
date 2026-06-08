@@ -109,6 +109,120 @@ function enableTooltips() {
     }
 }
 
+// Star overlay shown on attached cards to mark/set the primary photo
+function StarOverlay({id, isPri, onClick}) {
+    return (
+        <div style={{
+            position: 'absolute',
+            right: '1px',
+            top: '1px',
+            width: '23px',
+            height: '23px',
+            backgroundColor: 'white'
+        }}>
+            <i data-bs-toggle="tooltip" data-bs-placement="left"
+               title="Sæt som primær foto"
+               className={`bi-star${(isPri === 1 ? '-fill' : '')}`} style={{
+                color: 'gold',
+                position: 'absolute',
+                right: '3px',
+                top: '3px',
+                cursor: 'pointer'
+            }} id={id} onClick={onClick}></i>
+        </div>
+    );
+}
+
+// Collapsible editor for the photo attributes (billedtekst, alt_tekst, copyright)
+function AttributeEditor({objekt_id, attributes, onSave}) {
+    const [open, setOpen] = useState(false);
+    const [navn, setNavn] = useState(attributes?.navn ?? '');
+    const [billedtekst, setBilledtekst] = useState(attributes?.billedtekst ?? '');
+    const [altTekst, setAltTekst] = useState(attributes?.alt_tekst ?? '');
+    const [copyright, setCopyright] = useState(attributes?.copyright ?? '');
+    const [fotoregistrator, setFotoregistrator] = useState(attributes?.fotoregistrator ?? '');
+    const [fotodato, setFotodato] = useState(attributes?.fotodato ?? '');
+    const [saving, setSaving] = useState(false);
+
+    const save = async () => {
+        setSaving(true);
+        try {
+            await onSave(objekt_id, {navn, alt_tekst: altTekst, copyright, fotoregistrator, fotodato, billedtekst});
+            utils.showInfoToast("Oplysninger gemt", {delay: 3000, autohide: true});
+        } catch (e) {
+            console.error(e);
+            alert(`Fejl: ${e.message}`);
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    return (
+        <>
+            <button type="button" className="btn btn-outline-secondary btn-sm w-100"
+                    onClick={() => setOpen((o) => !o)}>Rediger oplysninger
+            </button>
+            {open && (
+                <div className="mt-2 text-start">
+                    <div className="mb-2">
+                        <label className="form-label mb-0">Navn</label>
+                        <input className="form-control form-control-sm" value={navn}
+                               onChange={(ev) => setNavn(ev.target.value)}/>
+                    </div>
+                    <div className="mb-2">
+                        <label className="form-label mb-0">Billedtekst</label>
+                        <input className="form-control form-control-sm" value={billedtekst}
+                               onChange={(ev) => setBilledtekst(ev.target.value)}/>
+                    </div>
+                    <div className="mb-2">
+                        <label className="form-label mb-0">Alt-tekst</label>
+                        <input className="form-control form-control-sm" value={altTekst}
+                               onChange={(ev) => setAltTekst(ev.target.value)}/>
+                    </div>
+                    <div className="mb-2">
+                        <label className="form-label mb-0">Copyright</label>
+                        <input className="form-control form-control-sm" value={copyright}
+                               onChange={(ev) => setCopyright(ev.target.value)}/>
+                    </div>
+                    <div className="mb-2">
+                        <label className="form-label mb-0">fotoregistrator</label>
+                        <input className="form-control form-control-sm" value={fotoregistrator}
+                               onChange={(ev) => setFotoregistrator(ev.target.value)}/>
+                    </div>
+                    <div className="mb-2">
+                        <label className="form-label mb-0">Fotodato</label>
+                        <input type="date" className="form-control form-control-sm" value={fotodato}
+                               onChange={(ev) => setFotodato(ev.target.value)}/>
+                    </div>
+                    <button type="button" className="btn btn-success btn-sm w-100"
+                            disabled={saving} onClick={save}>{saving ? 'Gemmer...' : 'Gem'}
+                    </button>
+                </div>
+            )}
+        </>
+    );
+}
+
+// Shared photo card: image, type-specific action buttons (children), attribute editor
+function PhotoCard({objekt_id, attributes, onSaveAttributes, topRight, children}) {
+    const imgSrc = `https://mapcentia-www.s3-eu-west-1.amazonaws.com/fkg/360/${objekt_id}.jpg`;
+    const imgSrcOrg = `https://mapcentia-www.s3-eu-west-1.amazonaws.com/fkg/${objekt_id}.jpg`;
+    return (
+        <div className="col gy-2">
+            <div className="card" style={{width: '100%', position: 'relative'}}>
+                <a target="_blank" href={imgSrcOrg} title="Se original"><img
+                    style={{width: '100%', height: '170px', objectFit: 'cover'}}
+                    src={imgSrc} className="card-img-top" alt="..."/></a>
+                {topRight}
+                <div className="card-body text-center">
+                    {children}
+                    <AttributeEditor objekt_id={objekt_id} attributes={attributes} onSave={onSaveAttributes}/>
+                </div>
+            </div>
+        </div>
+    );
+}
+
 function PhotoAttachManager() {
     const defaults = {
         facilitetId: '',
@@ -179,6 +293,43 @@ function PhotoAttachManager() {
         await update();
     }
 
+    async function setAttributes(objekt_id, {navn, billedtekst, alt_tekst, copyright, fotoregistrator, fotodato}) {
+        const res = await fetch(`${baseUrl}/7901`, {
+            method: 'PUT',
+            headers: {'Content-Type': 'application/json; charset=utf-8'},
+            body: JSON.stringify({
+                "objekt_id": objekt_id,
+                "navn": navn,
+                "billedtekst": billedtekst,
+                "alt_tekst": alt_tekst,
+                "copyright": copyright,
+                "fotoregistrator": fotoregistrator,
+                "fotodato": fotodato,
+            })
+        });
+        if (!res.ok) throw new Error('Update attributes failed');
+        await update();
+    }
+
+    async function deletePhoto(objekt_id) {
+        const res = await fetch(`${baseUrl}/7901/${encodeURIComponent(objekt_id)}`, {
+            method: 'DELETE',
+        });
+        if (!res.ok) throw new Error('Delete photo failed');
+        await update();
+    }
+
+    async function confirmDelete(objekt_id) {
+        if (!window.confirm('Slet dette foto permanent?')) return;
+        try {
+            await deletePhoto(objekt_id);
+            utils.showInfoToast("Foto slettet", {delay: 3000, autohide: true});
+        } catch (e) {
+            console.error(e);
+            alert(`Fejl: ${e.message}`);
+        }
+    }
+
     async function update() {
         if (!facilitetId) return;
         setLoading(true);
@@ -245,44 +396,20 @@ function PhotoAttachManager() {
                                 <div className="col gy-2">Indlæser...</div>
                             )}
                             {attached.map((o) => {
-                                const e = o[0];
+                                const objekt_id = o[0];
                                 const isPri = o[1];
                                 const forbindelsesId = o[2];
-                                const id = `detach_${e}`;
-                                const idp = `primary_${e}`;
-                                const imgSrc = `https://mapcentia-www.s3-eu-west-1.amazonaws.com/fkg/360/${e}.jpg`;
-                                const imgSrcOrg = `https://mapcentia-www.s3-eu-west-1.amazonaws.com/fkg/${e}.jpg`;
+                                const attributes = o[3];
                                 return (
-                                    <div className="col gy-2" key={`attached_${e}`}>
-                                        <div className="card" style={{width: '100%', position: 'relative'}}>
-                                            <a target="_blank" href={imgSrcOrg} title="Se original"><img
-                                                style={{width: '100%', height: '170px', objectFit: 'cover'}}
-                                                src={imgSrc} className="card-img-top" alt="..."/></a>
-                                            <div style={{
-                                                position: 'absolute',
-                                                right: '1px',
-                                                top: '1px',
-                                                width: '23px',
-                                                height: '23px',
-                                                backgroundColor: 'white'
-                                            }}>
-                                                <i data-bs-toggle="tooltip" data-bs-placement="left"
-                                                   title="Sæt som primær foto"
-                                                   className={`bi-star${(isPri === 1 ? '-fill' : '')}`} style={{
-                                                    color: 'gold',
-                                                    position: 'absolute',
-                                                    right: '3px',
-                                                    top: '3px',
-                                                    cursor: 'pointer'
-                                                }} id={idp} onClick={() => setPrimary(forbindelsesId)}></i>
-                                            </div>
-                                            <div className="card-body" style={{alignSelf: 'center'}}>
-                                                <button id={id} className="btn btn btn-outline-danger btn-sm"
-                                                        onClick={() => detach(forbindelsesId)}>Slet tilknyt
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
+                                    <PhotoCard key={`attached_${objekt_id}`} objekt_id={objekt_id}
+                                               attributes={attributes} onSaveAttributes={setAttributes}
+                                               topRight={<StarOverlay id={`primary_${objekt_id}`} isPri={isPri}
+                                                                      onClick={() => setPrimary(forbindelsesId)}/>}>
+                                        <button id={`detach_${objekt_id}`}
+                                                className="btn btn-outline-danger btn-sm w-100 mb-2"
+                                                onClick={() => detach(forbindelsesId)}>Slet tilknyt
+                                        </button>
+                                    </PhotoCard>
                                 );
                             })}
                         </div>
@@ -294,23 +421,20 @@ function PhotoAttachManager() {
                             {loading && detached.length === 0 && (
                                 <div className="col gy-2">Indlæser...</div>
                             )}
-                            {detached.map((e) => {
-                                const id = `attach_${e}`;
-                                const imgSrc = `https://mapcentia-www.s3-eu-west-1.amazonaws.com/fkg/360/${e}.jpg`;
-                                const imgSrcOrg = `https://mapcentia-www.s3-eu-west-1.amazonaws.com/fkg/${e}.jpg`;
+                            {detached.map((o) => {
+                                const objekt_id = o.objekt_id;
                                 return (
-                                    <div className="col gy-2" key={`detached_${e}`}>
-                                        <div className="card" style={{width: '100%'}}>
-                                            <a target="_blank" href={imgSrcOrg} title="Se original"><img
-                                                style={{width: '100%', height: '170px', objectFit: 'cover'}}
-                                                src={imgSrc} className="card-img-top" alt="..."/></a>
-                                            <div className="card-body" style={{alignSelf: 'center'}}>
-                                                <button id={id} className="btn btn-outline-success btn-sm"
-                                                        onClick={() => attach(e)}>Tilknyt
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
+                                    <PhotoCard key={`detached_${objekt_id}`} objekt_id={objekt_id}
+                                               attributes={o} onSaveAttributes={setAttributes}>
+                                        <button id={`attach_${objekt_id}`}
+                                                className="btn btn-outline-success btn-sm w-100 mb-2"
+                                                onClick={() => attach(objekt_id)}>Tilknyt
+                                        </button>
+                                        <button id={`delete_${objekt_id}`}
+                                                className="btn btn-outline-danger btn-sm w-100 mb-2"
+                                                onClick={() => confirmDelete(objekt_id)}>Slet foto
+                                        </button>
+                                    </PhotoCard>
                                 );
                             })}
                         </div>
