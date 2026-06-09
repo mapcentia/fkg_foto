@@ -160,10 +160,13 @@ function AttributeEditor({objekt_id, attributes, onSave}) {
     return (
         <>
             <button type="button" className="btn btn-outline-secondary btn-sm w-100"
-                    onClick={() => setOpen((o) => !o)}>Rediger oplysninger
+                    onClick={() => setOpen((o) => !o)}>Rediger oplysninger { open ? <i className="bi bi-caret-down-fill"></i> : <i className="bi bi-caret-right-fill"></i> }
             </button>
             {open && (
                 <div className="mt-2 text-start">
+                    <button type="button" className="btn btn-outline-success btn-sm w-100 mb-2"
+                            disabled={saving} onClick={save}>{saving ? 'Gemmer...' : 'Gem'}
+                    </button>
                     <div className="mb-2">
                         <label className="form-label mb-0">Navn</label>
                         <input className="form-control form-control-sm" value={navn}
@@ -194,9 +197,6 @@ function AttributeEditor({objekt_id, attributes, onSave}) {
                         <input type="date" className="form-control form-control-sm" value={fotodato}
                                onChange={(ev) => setFotodato(ev.target.value)}/>
                     </div>
-                    <button type="button" className="btn btn-success btn-sm w-100"
-                            disabled={saving} onClick={save}>{saving ? 'Gemmer...' : 'Gem'}
-                    </button>
                 </div>
             )}
         </>
