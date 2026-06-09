@@ -281,11 +281,10 @@ function PhotoAttachManager() {
     }
 
     async function setPrimary(forbindelsesId) {
-        const res = await fetch(`${baseUrl}/7900`, {
+        const res = await fetch(`${baseUrl}/7900/${encodeURIComponent(facilitetId)}`, {
             method: 'PUT',
             headers: {'Content-Type': 'application/json; charset=utf-8'},
             body: JSON.stringify({
-                "objekt_id": facilitetId,
                 "objekt_id_7900": forbindelsesId
             })
         });
@@ -294,11 +293,10 @@ function PhotoAttachManager() {
     }
 
     async function setAttributes(objekt_id, {navn, billedtekst, alt_tekst, copyright, fotoregistrator, fotodato}) {
-        const res = await fetch(`${baseUrl}/7901`, {
+        const res = await fetch(`${baseUrl}/7901/${encodeURIComponent(objekt_id)}`, {
             method: 'PUT',
             headers: {'Content-Type': 'application/json; charset=utf-8'},
             body: JSON.stringify({
-                "objekt_id": objekt_id,
                 "navn": navn,
                 "billedtekst": billedtekst,
                 "alt_tekst": alt_tekst,

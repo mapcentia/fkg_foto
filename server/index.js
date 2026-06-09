@@ -203,10 +203,11 @@ router.post('/api/extensions/fkgupload/api/process/:type', async function (req, 
     response.send(data);
 })
 
-router.put('/api/extensions/fkgupload/api/process/:type', async function (req, response) {
+router.put('/api/extensions/fkgupload/api/process/:type/:id', async function (req, response) {
     const payload = req.body;
     const type = req.params.type;
-    const url = config.gc2.host + `/extensions/fkgupload/api/process/${type}`;
+    const id = req.params.id;
+    const url = config.gc2.host + `/extensions/fkgupload/api/process/${type}/${id}`;
 
     console.log('Request URL:', url);
 
