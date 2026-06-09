@@ -92,7 +92,7 @@ function Upload(props) {
     >
         <div className="buttons">
             <button type="submit"
-                    className="btn btn btn-success mb-2 mt-2 w-100">{__("Submit")}</button>
+                    className="btn btn btn-success mb-2 mt-2 w-100">{__("Upload")}</button>
         </div>
     </Form>;
 }

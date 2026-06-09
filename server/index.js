@@ -258,9 +258,7 @@ router.delete('/api/extensions/fkgupload/api/process/:type/:id', async function 
     const responseText = await res.text();
 
     if (!res.ok) {
-        data = { success: false, message: responseText };
-        response.status(400).send(data);
-        return;
+        throw new Error(`HTTP error! status: ${res.status}, body: ${responseText}`);
     }
     // Try to parse as JSON
     try {
