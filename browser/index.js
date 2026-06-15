@@ -142,12 +142,13 @@ function AttributeEditor({objekt_id, attributes, onSave}) {
     const [copyright, setCopyright] = useState(attributes?.copyright ?? '');
     const [fotoregistrator, setFotoregistrator] = useState(attributes?.fotoregistrator ?? '');
     const [fotodato, setFotodato] = useState(attributes?.fotodato ?? '');
+    const [offkode, setOffkode] = useState(attributes?.off_kode ?? '');
     const [saving, setSaving] = useState(false);
 
     const save = async () => {
         setSaving(true);
         try {
-            await onSave(objekt_id, {navn, alt_tekst: altTekst, copyright, fotoregistrator, fotodato, billedtekst});
+            await onSave(objekt_id, {navn, alt_tekst: altTekst, copyright, fotoregistrator, fotodato, billedtekst, off_kode: offkode});
             utils.showInfoToast("Oplysninger gemt", {delay: 3000, autohide: true});
         } catch (e) {
             console.error(e);
@@ -196,6 +197,15 @@ function AttributeEditor({objekt_id, attributes, onSave}) {
                         <label className="form-label mb-0">Fotodato</label>
                         <input type="date" className="form-control form-control-sm" value={fotodato}
                                onChange={(ev) => setFotodato(ev.target.value)}/>
+                    </div>
+                    <div className="mb-2">
+                        <label className="form-label mb-0">Offentlighedskode</label>
+                        <select className="form-control form-control-sm" value={offkode}
+                               onChange={(ev) => setOffkode(ev.target.value)}>
+                            <option value="1">Synlig for alle</option>
+                            <option value="2">Synlig for den ansvarlige myndighed</option>
+                            <option value="3">Synlig for alle myndigheder, men ikke offentligheden</option>
+                        </select>
                     </div>
                 </div>
             )}
@@ -292,7 +302,7 @@ function PhotoAttachManager() {
         await update();
     }
 
-    async function setAttributes(objekt_id, {navn, billedtekst, alt_tekst, copyright, fotoregistrator, fotodato}) {
+    async function setAttributes(objekt_id, {navn, billedtekst, alt_tekst, copyright, fotoregistrator, fotodato, off_kode}) {
         const res = await fetch(`${baseUrl}/7901/${encodeURIComponent(objekt_id)}`, {
             method: 'PUT',
             headers: {'Content-Type': 'application/json; charset=utf-8'},
@@ -303,6 +313,7 @@ function PhotoAttachManager() {
                 "copyright": copyright,
                 "fotoregistrator": fotoregistrator,
                 "fotodato": fotodato,
+                "off_kode": off_kode,
             })
         });
         if (!res.ok) throw new Error('Update attributes failed');
