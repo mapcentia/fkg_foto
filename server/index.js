@@ -9,6 +9,7 @@ const express = require('express');
 const router = express.Router();
 const config = require('../../../config/config.js');
 const FormData = require('form-data');
+const nodeFetch = require('node-fetch');
 
 const createId = () => (+new Date * (Math.random() + 1)).toString(36).substr(2, 5);
 
@@ -68,7 +69,7 @@ router.post('/api/extension/fkgupload', async function (req, response) {
         console.log('====================');
 
         // Use node-fetch with FormData - it handles the stream properly
-        let res = await fetch(uploadUrl, {
+        let res = await nodeFetch(uploadUrl, {
             method: 'POST',
             body: formData,
             headers: {
