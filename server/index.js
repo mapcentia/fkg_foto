@@ -9,7 +9,6 @@ const express = require('express');
 const router = express.Router();
 const config = require('../../../config/config.js');
 const FormData = require('form-data');
-const fetch = require('node-fetch');
 
 const createId = () => (+new Date * (Math.random() + 1)).toString(36).substr(2, 5);
 
@@ -160,6 +159,7 @@ router.get('/api/extensions/fkgupload/api/process/:type/:id', async function (re
     }
 
     // Try to parse as JSON
+    let data;
     try {
         data = JSON.parse(responseText);
     } catch (e) {
@@ -194,6 +194,7 @@ router.post('/api/extensions/fkgupload/api/process/:type', async function (req, 
     }
 
     // Try to parse as JSON
+    let data;
     try {
         data = JSON.parse(responseText);
     } catch (e) {
@@ -229,6 +230,7 @@ router.put('/api/extensions/fkgupload/api/process/:type/:id', async function (re
     }
 
     // Try to parse as JSON
+    let data;
     try {
         data = JSON.parse(responseText);
     } catch (e) {
@@ -261,6 +263,7 @@ router.delete('/api/extensions/fkgupload/api/process/:type/:id', async function 
         throw new Error(`HTTP error! status: ${res.status}, body: ${responseText}`);
     }
     // Try to parse as JSON
+    let data;
     try {
         data = JSON.parse(responseText);
     } catch (e) {
