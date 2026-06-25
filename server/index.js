@@ -8,7 +8,6 @@
 const express = require('express');
 const router = express.Router();
 const config = require('../../../config/config.js');
-const FormData = require('form-data');
 
 const createId = () => (+new Date * (Math.random() + 1)).toString(36).substr(2, 5);
 
@@ -37,7 +36,8 @@ router.post('/api/extension/fkgupload', async function (req, response) {
         const extension = contentType.split('/')[1] || 'png';
         const filename = createId() + '.' + extension;
 
-        // Create FormData - the order and structure must match what PHP expects
+        // Use the native (spec) FormData - native fetch serialises this itself
+        // and sets the multipart Content-Type with boundary automatically. The
         const formData = new FormData();
 
         // PHP expects these fields from $_REQUEST
@@ -45,12 +45,9 @@ router.post('/api/extension/fkgupload', async function (req, response) {
         formData.append('type', contentType);
         formData.append('relativePath', 'null');
 
-        // The file must be appended with proper options for PHP to recognize it
-        formData.append('file', fileBuffer, {
-            filename: filename,
-            contentType: contentType,
-            knownLength: fileBuffer.length
-        });
+        // The file part - a Blob carries the content type and filename for PHP
+        const fileBlob = new Blob([fileBuffer], {type: contentType});
+        formData.append('file', fileBlob, filename);
 
         // Add session cookie if available
         const headers = {};
@@ -67,16 +64,12 @@ router.post('/api/extension/fkgupload', async function (req, response) {
         console.log('Session:', req?.session?.gc2SessionId ? 'Present' : 'Missing');
         console.log('====================');
 
-        // Use native fetch with FormData - the form-data package is a Node
-        // Readable stream, so undici requires duplex: 'half' when streaming it.
+        // Do NOT set Content-Type here - native fetch sets it (with the multipart
+        // boundary) from the FormData body. Only pass the session cookie header.
         let res = await fetch(uploadUrl, {
             method: 'POST',
             body: formData,
-            duplex: 'half',
-            headers: {
-                ...headers,
-                ...formData.getHeaders()
-            }
+            headers
         });
 
         console.log('Response status:', res.status);
