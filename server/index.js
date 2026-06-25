@@ -9,7 +9,6 @@ const express = require('express');
 const router = express.Router();
 const config = require('../../../config/config.js');
 const FormData = require('form-data');
-const nodeFetch = require('node-fetch');
 
 const createId = () => (+new Date * (Math.random() + 1)).toString(36).substr(2, 5);
 
@@ -68,10 +67,12 @@ router.post('/api/extension/fkgupload', async function (req, response) {
         console.log('Session:', req?.session?.gc2SessionId ? 'Present' : 'Missing');
         console.log('====================');
 
-        // Use node-fetch with FormData - it handles the stream properly
-        let res = await nodeFetch(uploadUrl, {
+        // Use native fetch with FormData - the form-data package is a Node
+        // Readable stream, so undici requires duplex: 'half' when streaming it.
+        let res = await fetch(uploadUrl, {
             method: 'POST',
             body: formData,
+            duplex: 'half',
             headers: {
                 ...headers,
                 ...formData.getHeaders()
