@@ -544,7 +544,8 @@ module.exports = module.exports = {
         const controlBtn = document.querySelectorAll(".offcanvasFkgUpploadControlBtn");
         if (controlBtn) {
             controlBtn.forEach(btn => {
-                btn.addEventListener("click", () => {
+                btn.addEventListener("click", (e) => {
+                    L.DomEvent.stop(e);
                     offcanvas.toggle()
                     sqlQuery.resetAll();
                 });
